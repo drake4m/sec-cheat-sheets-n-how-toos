@@ -1,1 +1,30 @@
-F5
+===== LB F5 CLI Commands  =====
+
+delete /sys connection
+delete ltm persistence persist-records
+
+rdexec [route domain] command options (exec commands on route domain)
+show sys connection cs-server-addr 10.244.3.11%1 all-properties | grep 10.49* (NAT details on connections)
+
+
+
+
+tcpdump -i 0.0 'src host 194.3.119.2' and dst host 222.92.231.51' -w meetingpp.pcap
+
+tcpdump -nni 0.0:nnn -s0 host 222.92.231.51 or 10.29.48.11 -w meetingpp.pcap
+
+tcpdump -vvv -s 0 -nni 0.0:nnn -w www-ssl-client.cap host 10.29.61.9 and port 443
+tcpdump -vvv -s 0 -nni 0.0:nnn -w www-ssl-server.cap host 10.29.52.10 and 10.29.48.11 and port 443
+
+
+tcpdump -vvv -s 0 -nni 0.0:nnn host 10.29.56.105 and port 30004
+
+
+bigstart restart httpd & bigstart restart tomcat
+
+
+00:50:56:b8:29:4a
+
+
+delete ltm persistence persist
+delete /sys connection
