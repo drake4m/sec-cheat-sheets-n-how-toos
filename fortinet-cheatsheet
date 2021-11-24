@@ -1,1 +1,432 @@
-Forti
+Fortinet : Cheatsheet
+----------------------------------------
+
+
+Basic sniffing command
+
+All Packet sniffing commands start like:
+
+# diag sniffer packet <interface> <'filter'> <verbose> <count> a
+
+diag sniffer packet any 'host 10.55.139.126'
+diag sniffer packet any 'host 10.245.32.115 and host 10.244.3.2'
+
+
+diagnose sniffer packet any 'udp and port 514' 3
+
+execute device replace sn fw-wan-group-hwb1-1 FG1K2D3I16801798
+ 
+ Syntax (Via Console / CLI)
+
+FortiOS
+
+execute disk scan <ref_int>
+
+# execute disk scan 3
+scan requested for: 3/Internal (device=/dev/sda3)
+This action requires the unit to reboot.
+
+
+Do you want to continue? (y/n)
+
+FortiOS 5.4.0
+
+diagnose system fsck harddisk
+ 
+ 
+FortiOS tells us:
+
+<filter> filter for sniffer
+Syntax: '[[src|dst] host<IP1>] [[src|dst] host<IP2>] [[arp|ip|gre|esp|udp|tcp] [port_no]] [[arp|ip|gre|esp|udp|tcp] [port_no]]'
+
+If a second host is specified, only the traffic between the 2 hosts will be displayed.
+
+<filter> flexible logical filters for sniffer (or "none").
+For example: To print udp 1812 traffic between forti1 and either forti2 or forti3
+'udp and port 1812 and host forti1 and (forti2 or forti3)'
+
+
+diag sniffer packet internal 'src host 192.168.0.130 and dst host 192.168.0.1' 1
+
+Fortinet
+
+diagnose debug reset
+diagnose debug enable
+diagnose debug flow filter clear
+diagnose debug flow filter daddr 10.244.3.33
+diagnose debug flow filter dport 514
+diagnose debug flow show con enable
+diagnose debug flow show fun enable
+diagnose debug flow trace start 20 
+
+
+config system ha
+  set mode a-p
+  set group-name My-HA-Cluster
+  set password
+  set priority 250
+  set override enable
+  set hbdev ha1 50 ha2 50
+end
+
+
+config system ha
+   set override enable
+end
+
+
+To reconnect sooner, you can update the ARP table of your management PC by deleting the ARP table entry for the FortiGate (or just deleting all arp table entries). You can usually delete the arp table from a command prompt using a command similar to arp -d.
+
+
+fw-tp-fr-st-054-2 (global) $ config system ha
+ <Enter>
+
+fw-tp-fr-st-054-2 (global) $ config system ha
+
+fw-tp-fr-st-054-2 (ha) $ set override enable
+
+fw-tp-fr-st-054-2 (ha) $ set override-wait-time 0
+
+fw-tp-fr-st-054-2 (ha) $ end
+
+fw-tp-fr-st-054-2 (global) $ get sys ha
+
+La révision hw est activée sur les deux :
+
+fw-tp-fr-st-054-1 (global) # execute ha ignore-hardware-revision status
+The ignore mode is enabled.
+
+
+fw-tp-fr-st-054-2 (global) # exec ha ignore-hardware-revision status
+The ignore mode is enabled.
+
+
+diagnose sys ha cluster-csum
+
+config global
+exec ha ignore-hardware-revision enable
+end
+
+fw-tp-fr-st-054-2 (global) # slave's external files are not in sync with master, sequence:0. (type CERT_LOCAL)
+
+Pour résoudre ce problème j'ai du du faire un "exec formatlogdisk" sur le slave, et forcer une synchro manuelle :
+
+
+Des commandes utiles :
+
+VERIFY PARTITION LOG :
+conf wanopt storage
+show wanopt storage
+
+get sys status
+
+ACTIVER LA SYNC
+config system ha
+set sysconfig enable
+
+config global
+diagnose sys ha checksum cluster
+execute ha manage 1
+supergnt
+#gntteam;
+config global
+execute ha synchronize start
+diagnose sys ha checksum recalculate
+diagnose sys ha checksum cluster
+end
+exit
+exit
+
+execute disk scan 1
+
+COMPARE HA CHECKSUM :
+diag sys ha checksum recalculate
+diagnose sys ha checksum cluster
+get sys ha status
+HA commandes :
+execute ha manage 0
+execute ha synchronize start
+
+- show system ha
+- diag sys ha status
+- get sys ha status
+- diag sys ha checksum clsuter
+
+diag debug reset
+diag debug application hasync -1
+diag debug application hatalk -1
+diag debug disable
+
+
+Displaying cluster unit age differences
+diagnose sys ha dump-by all-vcluster
+diagnose sys ha reset-uptime
+
+Temporarily setting a cluster unit to be the primary unit
+diagnose sys ha set-as-master enable
+
+Unit A :
+
+    is our preferred master
+    has a priority of 200
+    is configured with ha override disable
+
+
+Unit B:
+
+    is our preferred slave
+    has a priority of 100
+    is configured with ha override disable
+
+Time line:
+|
+|  t= 0 s : A and B are just booted
+|              => ha uptime difference is < 5m, as a consequence HA uptime difference is ignored in master election process
+|              => A is promoted master because its priority is higher than B
+|
+|
+|  t=1 mn : A is rebooted
+|              => A leaves the cluster but re-joins it as master
+|                    This is expected because the ha uptime difference between A and B is less than 5 min
+|                    therefor the ha aging condition is ignored in the election algorithm (and A's priority > B's priority)
+|
+|
+...
+| t= 15 mn : A is again rebooted
+|              => This time A rejoins the cluster as slave
+|                     Because ha uptime difference between A and B is greater than 5 minutes
+|
+| The status is now : B=master, A=slave
+|
+|
+|
+|
+| t= later... in a maintenance window
+|       Administrator wish is to have its preferred master A back as the cluster master.
+|       Administrator connects to B (current master) CLI and issue :
+|       diag sys ha reset-uptime
+|      => this resets B's internal HA uptime making A the oldest one
+|      => A is promoted master
+|      => B is degraded to slave
+|
+V
+
+Note : A cli configuration command has been added in 4.00 MR3 to make the default 5 minutes "ha uptime difference" limit configurable.
+You can now use "set ha-uptime-diff-margin" for this (default remains 5 minutes)
+
+
+diagnose cdb check adom-revision [adom] [preview]
+diagnose cdb check db-schema-version {get | reset | upgrade} [version]
+diagnose cdb check update-devinfo <item> [new value] [0 | 1] [model-name]
+diagnose cdb upgrade check <action>
+diagnose cdb upgrade force-retry <action>
+diagnose cdb upgrade log
+diagnose cdb upgrade summary 
+
+diagnose pm2 check-integrity db-category {all | adom | device |global | ips | task | ncmdb}
+diagnose pm2 print <log-type>
+diagnose sql config auto-cache-delay [set <seconds>| reset]
+
+diagnose sql config debug-filter [set | test] [string]
+diagnose sql config deferred-index-timespan [set <value>]
+diagnose sql config hcache-agg-step [reset | set <integer>]
+diagnose sql config hcache-max-fv-row [reset | set <integer>]
+diagnose sql config hcache-max-rpt-row [reset | set <integer>]
+diagnose sql config report-engine [set {gen1 | gen2}]
+diagnose sql config topdev-log-thres [reset | set <integer>]
+diagnose sql config topdev-num-max [reset | set <integer>]
+diagnose sql hcache add-task <adom> <norm-query-hash> <agg-level> <timestamp> <num-of-days>
+diagnose sql hcache aggregate debug {on | off}
+diagnose sql hcache aggregate debug-file {show | delete | upload <ftp host> <ftp dir> <ftp user name> <ftp password>
+diagnose sql hcache aggregate status <adom> <query-hash/tag> <detail>
+diagnose sql hcache dump-task <filter>
+diagnose sql hcache list <adom> <start-time> <end-time> <query-tag/norm-qry-hash/sql> <is-fortiview>
+diagnose sql hcache show hcache <adom> <id>
+diagnose sql hcache show time <time> <time> <time> <time>
+diagnose sql hcache rebuild-both <start-time> <end-time>
+diagnose sql hcache rebuild-fortiview <start-time> <end-time>
+diagnose sql hcache rebuild-report <start-time> <end-time>
+diagnose sql hcache rebuild-status
+diagnose sql hcache status {all | <adom>}
+diagnose sql process list [full]
+diagnose sql process kill <pid>
+diagnose sql remove {hcache <adom> [fast] | query-cache | rebuild-db-flag | tmp-table}
+diagnose sql show {db-size | hcache-size | log-filters | log-stfile <device-id> <vdom> | policy-info <adom>}
+diagnose sql status {rebuild-adom <adom> | rebuild-db | run_sql_rpt | sqlplugind | sqlreportd}
+diagnose sql upload <ftp_host_ip> <ftp_directory> <ftp_user_name> <ftp_password>
+
+diagnose system admin-session list
+diagnose system admin-session status
+diagnose system admin-session kill 
+diagnose system print certificate
+diagnose system print cpuinfo
+diagnose system print df
+diagnose system print hosts
+diagnose system print interface <interface>
+diagnose system print loadavg
+diagnose system print netstat
+diagnose system print partitions
+diagnose system print route
+diagnose system print rtcache
+diagnose system print slabinfo
+diagnose system print sockets
+diagnose system print uptime
+diagnose system flash list
+diagnose system process kill -<signal> <pid>
+diagnose system process killall <module>
+diagnose system process list
+diagnose system route list
+diagnose system server start
+diagnose debug disable
+diagnose debug enable
+diagnose debug console timestamp disable
+diagnose debug application hatalk -1
+diagnose debug application hasync -1
+
+diagnose dvm check-integrity
+diagnose cdb check objcfg-integrity
+diagnose cdb check policy-assignment
+diagnose pm2 check-integrity all
+diagnose cdb check reference-integrity  [Added in 5.2.2]
+diagnose cdb check policy-packages      [Added in 5.2.9/5.4.2]
+diagnose cdb check adom-revision        [Added in 5.4.2]
+diagnose cdb check adom-integrity       [Added in 5.2.4/5.4.0] <- [Update June 8, 2017] This command was introduced in version 5.2.4, however it did not work correctly, as it modified all Policy Package statuses after execution.  It was also possible that it did not complete successfully and aborted during execution.  These issues have been corrected as of 5.2.11/5.4.3 or later, and can now be used correctly.
+
+Refaire le tunnel avec les FGs
+exec fgfm reclaim-dev-tunnel <device name>
+-----------------------------------------------------
+diagnose hardware deviceinfo disk
+
+Before Upgrade from 5.4.x:
+
+diagnose dvm device list
+diagnose pm2 check-integrity all
+diagnose dvm check-integrity
+diagnose cdb check adom-integrity
+diagnose cdb check policy-packages
+diagnose cdb check objcfg-integrity
+diagnose cdb check reference-integrity
+
+After Upgrade :
+diagnose sql status rebuild-db 
+Si Failed: 
+diagnose cdb upgrade force-retry resync-dbcache
+diag cdb upgrade check +all
+
+Repair TASK FMG: 
+dia dvm task repair
+------------------------------
+diag sys fsck harddisk
+
+exec fgfm reclaim
+execute fgfm reclaim-dev-tunnel fw-tp-fr-st-239
+
+
+config global
+execute upd-vd-license <license_key>
+
+fnsysctl [linux cli]
+
+http://help.fortinet.com
+
+
+
+    To configure your FortiManager as a closed network, enter the following CLI command on your FortiManager:
+
+config fmupdate publicnetwork
+set status disable
+end
+
+ 
+
+    To configure FortiGate VM to use FortiManager as its override server, enter the following CLI commands on your FortiGate VM:
+
+config system central-management
+set mode normal
+set type fortimanager
+set include-default-servers disable
+set vdom root
+config server-list
+edit 1
+set server-type update rating
+set server-address 10.54.66.91
+next
+end
+end
+
+execute update-now
+
+Mettre à jour le FMG NY
+
+config global
+config system central-management
+set type fortimanager
+set fmg 10.54.66.91
+config server-list
+edit 1
+set server-type update rating
+set server-address 10.54.66.91
+next
+end
+set include-default-servers disable
+end
+end
+
+
+
+
+admin@10.240.0.81's password:
+WARNING: File System Check Recommended! Unsafe reboot may have caused inconsistency in disk drive.
+It is strongly recommended that you check file system consistency before proceeding.
+Please run 'execute disk scan 17'
+Note: The device will reboot and scan during startup. This may take up to 10 minutes
+fw-tp-fr-monext-rennes-1 # get sys stat
+
+
+
+Using username "admin".
+admin@10.245.0.5's password:
+Send automatic password
+WARNING: File System Check Recommended! Unsafe reboot may have caused inconsistency in disk drive.
+It is strongly recommended that you check file system consistency before proceeding.
+Please run 'execute disk scan 1'
+Note: The device will reboot and scan during startup. This may take up to 10 minutes
+fw-int-eu-edc1 #
+
+
+
+
+    Go to System > Settings.
+    Set Central Management to FortiManager.
+    Enter the FortiManager's IP/Domain Name in the field provided, and select Send Request.
+
+ 
+
+You can also select Registration Password and enter a password to connect to the FortiManager.
+
+To configure the previous steps in the CLI, enter the following:
+
+config system central-management
+
+set fmg <ip_address>
+
+end
+
+ 
+
+To use the registration password, enter the following:
+
+execute central-mgmt register-device <fmg-serial-no><fmg-register-password><fgtusrname><fgt-password>
+execute central-mgmt register-device FMG-VM0A17002759 TpDhk6RrhBXvddjQJACj admin HurWjWu#e5YwD0Vm9rl!
+
+execute fmpolicy print-adom-object OLD-FR-HYPER-V5 142 grp_SRV_VLP_MARKET
+
+
+execute fmpolicy check-upgrade-object manual checking all all
+
+diagnose fmupdate updatenow fds
+diagnose fmupdate updatenow fgd
+diagnose fmupdate updatenow fct
+
+
+https://help.fortinet.com/fos50hlp/54/Content/FortiOS/fortigate-ports-and-protocols-54/03-FGFM.htm
