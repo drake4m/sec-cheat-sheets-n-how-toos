@@ -1,1 +1,1185 @@
-CHK
++=================================================+
+= All checkpoint debug & system & others commands =
++=================================================+
+
+
+
+
+
+------------------------------------------------------------------------------
+Cluster Swap 
+------------------------------------------------------------------------------
+
+unset TMOUT
+
+[Expert@fw-tp-ar-2:0]# cphaprob stat
+
+[Expert@fw-tp-ar-2:0]# clusterXL_admin down && clusterXL_admin up
+
+[Expert@fw-tp-ar-2:0]# cphaprob stat
+
+Cluster Mode:   High Availability (Active Up) with IGMP Membership
+
+Number     Unique Address  Assigned Load   State
+
+1          10.50.96.17     100%            Active
+2 (local)  10.50.96.18     0%              Standby
+
+
+------------------------------------------------------------------------------
+FW Monitor  
+------------------------------------------------------------------------------
+fw ctl zdebug drop | grep 10.55.64.* //shows dropped packets in realtime / gives reason for drop
+fw ctl debug -m fw +drop conn | grep 74.117.207.1 //show firewall's connection drops warnings and error
+
+
+fw monitor -e 'accept host(10.244.196.143) and host(10.55.26.226);'
+fw monitor -e 'accept host(10.22.144.136);'
+fw monitor -e 'accept host(100.72.64.194) and port(22);'
+
+fw monitor -e 'accept host(10.24.128.75) or host(10.55.30.214);'
+
+10.24.128.75 and 10.55.30.214
+
+fw monitor -e "accept net(100.64.5.56/29);" 
+  
+fw monitor -e 'accept src=10.201.243.24;' -o /var/tmp/es_104030.cap 
+
+100.64.8.89
+100.64.8.81
+
+------------------------------------------------------------------------------------------
+FW Gateway Log switch gaia
+------------------------------------------------------------------------------------------
+//Connect to the desired gateway
+
+cd $FWDIR/log
+fw logswitch
+
+------------------------------------------------------------------------------------------
+admin
+------------------------------------------------------------------------------------------
+//First connect to the used MDS
+
+mdsstat//list of cma
+mdsenv <cma name>//go to the cma directory
+mcd conf//check the directory
+
+fw fetchlogs -f 2017-09-04_114820.log 10.49.66.252// fetch the logs from the fw gw
+
+FillCommunityHash: Community participants list is NULL
+
+------------------------------------------------------------------------------
+Checkpoint different Commands 
+------------------------------------------------------------------------------
+
+Check Point commands generally come under cp (general), fw (firewall), and fwm (management).
+CP, FW & FWM
+cphaprob stat //List cluster status
+cphaprob -a if //List status of interfaces
+cphaprob syncstat //shows the sync status
+cphaprob list //Shows a status in list form
+cphastart/stop //Stops clustering on the specfic node
+cp_conf sic //SIC stuff
+cpconfig //config util
+cplic print //prints the license
+cprestart //Restarts all Check Point Services
+cpstart //Starts all Check Point Services
+cpstop //Stops all Check Point Services
+cpstop -fwflag -proc //Stops all checkpoint Services but keeps policy active in kernel
+cplic print //Print all the licensing information.
+cpstat -f all polsrv //Show VPN Policy Server Stats
+cpstat//Shows the status of the firewall 
+Following error can occur in kernel cluster debug (fw ctl debug -m cluster + stat)
+fw tab -t sam_blocked_ips //Block IPS via SmartTracker
+fw tab -t connections -s//Show connection stats
+fw tab -t connections -f  //Show connections with IP instead of HEX
+fw tab -t fwx_alloc -f //Show fwx_alloc with IP instead of HEX 
+fw tab -t peers_count -s //Shows VPN stats
+fw tab -t userc_users -s //Shows VPN stats
+fw checklic //Check license details
+fw ctl get int [global kernel parameter] //Shows the current value of a global kernel parameter
+fw ctl set int [global kernel parameter]  [value] //Sets the current value of a global keneral parameter. Only Temp ; Cleared after reboot. 
+fw ctl arp //Shows arp table
+fw ctl install //Install hosts internal interfaces
+fw ctl ip_forwarding //Control IP forwarding
+fw ctl pstat //System Resource stats
+fw ctl uninstall //Uninstall hosts internal interfaces
+fw exportlog .o //Export current log file to ascii file
+fw fetch 10.54.66.32//Fetch security policy and install
+fw –d fetch 10.54.66.32
+fw fetch localhost //Installs (on gateway) the last installed policy.
+fw hastat //Shows Cluster statistics
+fw lichosts //Display protected hosts
+fw log -f //Tail the current log file
+fw log -s -e //Retrieve logs between times
+fw logswitch //Rotate current log file
+fw lslogs //Display remote machine log-file list
+fw monitor //Packet sniffer
+fw printlic -p //Print current Firewall modules
+fw printlic //Print current license details
+fw putkey //Install authenication key onto host
+fw stat -l     //Long stat list, shows which policies are installed
+fw stat -s //Short stat list, shows which policies are installed
+fw unloadlocal //Unload policy
+fw ver -k //Returns version, patch info and Kernal info
+fwstart //Starts the firewall
+fwstop //Stop the firewall
+fwm lock_admin -v //View locked admin accounts
+fwm dbexport -f user.txt //used to export users , can also use dbimport
+fwm_start //starts the management processes
+fwm -p //Print a list of Admin users
+fwm -a //Adds an Admin
+fwm -r //Delete an administrator
+
+Provider 1
+----------
+mdsenv [cma name] //Sets the mds environment
+mcd  //Changes your directory to that of the environment.
+mds_setup //To setup MDS Servers
+mdsconfig //Alternative to cpconfig for MDS servers
+mdsstat //To see the processes status
+mdsstart_customer [cma name]  //To start cma
+mdsstop_customer [cma name] //To stop cma
+cma_migrate //To migrate an Smart center server to CMA
+cmamigrate_assist //If you dont want to go through the pain of tar/zip/ftp and if you wish to enable FTP on Smart center server
+VPN
+vpn tu                                            //VPN utility, allows you to rekey vpn
+vpn ipafile_check ipassignment.conf detail‏
+//Verifies the ipassignment.conf file
+dtps lic //show desktop policy license status
+cpstat -f all polsrv //show status of the dtps 
+vpn shell /tunnels/delete/IKE/peer/[peer ip] delete IKE SA
+vpn shell /tunnels/delete/IPsec/peer/[peer ip] delete Phase 2 SA
+vpn shell /show/tunnels/ike/peer/[peer ip] show IKE SA
+vpn shell /show/tunnels/ipsec/peer/[peer ip] show Phase 2 SA
+vpn shell //show interface detailed [VTI name] show VTI detail
+
+Debugging
+---------
+fw ctl zdebug drop //shows dropped packets in realtime / gives reason for drop
+fw ctl debug -m fw +drop conn  //show firewall's connection drops warnings and error
+
+
+SPLAT Only
+router //Enters router mode for use on Secure Platform Pro for advanced routing options
+patch add cd  //Allows you to mount an iso and upgrade your checkpoint software (SPLAT Only) 
+backup //Allows you to preform a system operating system backup
+restore //Allows you to restore your backup
+snapshot //Performs a system backup which includes all Check Point binaries. Note : This issues a cpstop.
+VSX
+vsx get [vsys name/id] //get the current context
+vsx set [vsys name/id] //set your context
+fw -vs [vsys id] getifs //show the interfaces for a virtual device
+fw vsx stat -l //shows a list of the virtual devices and installed policies
+fw vsx stat -v //shows a list of the virtual devices and installed policies (verbose)
+reset_gw //resets the gateway, clearing all previous virtual devices and settings.
+
+------------------------------------------------------------------------------
+Smart Gateway Debug Commands
+------------------------------------------------------------------------------
+
+clock //bios time and date
+cpconfig //change SIC, licenses and more
+cplic print //license information
+cpstart;cpstop //start all checkpoint services
+cpstat fw //show policy name, policy install time and interface table
+cpstat ha //high availability state
+cpstat os -f cpu //checkpoint cpu status
+cpstat os -f routing //checkpoint routing table
+cpstop //stop all checkpoint services
+cpwd_admin monitor_list //list processes actively monitored. Firewall should contain cpd and vpnd.
+expert //change from the initial administrator privilege to advanced privilege
+fw ctl iflist //show interface names
+/bin/date //OS time and date
+fwm load <policyname> <gatewayobjectname> //On smartcenter or MDM, verify and compile and load the policyname onto the targetgateway. When it compiles, it creates a file called  $FWDIR/conf/<policyname.pf>, this is the compiled inspect script. From that it generates $FWDIR/conf/<gateway>/rulebases_5_0.fws which is loaded into gateway.
+
+fw fetch 10.49.66.58//get the policy from the firewall manager (use this only if there are problems on the firewall). Downloads rulebases_5_0.fws from 10.0.0.42. This has latest policy in it
+fw unloadlocal//Remove all policy and security enforcement from SPLAT. Make it a straight linux box basically
+sysctl -w net.ipv4.ip_forward=1 //After unloading policy, make SPLAT route through the box. Turn on forwarding
+fw ver -k //Firewall version and kernel version
+cpinfo //Prints out TONS of FW debug information for help desk
+fw stat //firewall status, should contain the name of the policy and the relevant interfaces, i.e. Standard_5_1_1_1_1 [>eth4] [<eth4] [<eth5] [>eth0.900] [<eth0.900]
+fw stat -l //show which policy is associated with which interface and package drop, accept and reject
+
+fw tab
+
+fw tab | grep '\--' | more//displays firewall hash tables. Note these are tables that are reserved for firewall kernel hash tables. fw ctl mem
+
+Dump out names of tables stored in hash memory ' fw ctl pstat' (hmem)
+fw tab -s -t connections //number of connections in state table
+fw tab -t xlate -x //clear all translated entries (emergency only)
+fwm lock_admin -h //unlock a user account after repeated failed log in attempts
+fwm ver //firewall manager version (on SmartCenter)
+sysconfig //configure date/time, network, dns, ntp
+upgrade_import run ‘/opt/CPsuite-R65/fw1/bin/upgrade_tools/upgrade_import’ after a system upgrade to import the old license and system information.
+hwclock //show the hardware clock. If the hardware and operating system clocks are off by more than a minute, sync the hardware clock to the OS with "hwclock –systohc"
+cpd_sched_config print //Print out CP batch queue -- CP version of crontab
+fw ctl arp //List all the proxy arp entries for manual arp brought into the kernel from $FWDIR/conf/local.arp. Also have to check Global Properties:NAT:Merge manual arps
+
+------------------------------------------------------------------------------
+======NAT DEBUG=========
+------------------------------------------------------------------------------
+fw ctl debug -buf 32000
+fw ctl debug + xlate xltrc nat
+fw ctl kdebug -f > /tmp/nat.out
+fw ctl debug 0
+
+
+--Reserve space
+-- Turn on NAT debug
+- Dump to file
+- Turn off NAT debug
+
+fw monitor -i -p all > outputascii.txt
+  
+
+-o output.cap  
+
+-x 0
+
+-e "accept ip_src=1.2.3.4"
+
+
+Dump traffic through iIoO stacks and ouput to ascii. -i flushes buffers immediately so you get all the output written to the output file.
+
+Dump traffic through iIoO stacks and output to Wireshark format for export.
+
+Packet data dump starting at offset 0
+
+Only filter packets from 1.2.3.4 [NOTE:$FWDIR/lib/tcpip.def has shortcuts for filtering -- ip_src is one example of a shortcut/macro]
+
+cat upgrade_log-1418048299.elg | grep IPS
+------------------------------------------------------------------------------
+ Logging Commands
+------------------------------------------------------------------------------
+
+fw log -c drop //Entries in the log 'drop' column. also can use 'accept' and 'reject'
+fwm logexport -i <log name> -o <outputfilename //export an old log file on the firewall manager
+fw log -n <fwlogname.log> > /tmp/logout.txt //dump logs into file...do not use DNS resolution -n, much faster! NO DNS! -n
+fw log -n < fwlogname.log> | tee /tmp/logout.txt //dump log files both to display AND to file logout.txt. NO DNS! -n
+fw logswitch //rotate logs, clear out current log and archive it based on date
+fw lslogs //list firewall logs
+fw log -f //tail the current log
+fw log -n <logfile>.log 
+log list//show all logs kept by gateway/mgr. Both *.log, *elg,
+log show #//dump a log listed by 'log list'
+fwm logexport -i <log name> -o <output name.txt> //NOTE: 'fwm' not 'fw'. Export ogs to ascii to output_name.txt file
+fw log -b <MMM DD, YYYY HH:MM:SS> <MMM DD, YYYY HH:MM:SS> //search the current log for activity between specific times, eg
+
+fw log -b "Jul 23, 2009 15:01:30" "Jul 23,2009 15:15:00"
+
+
+------------------------------------------------------------------------------
+DEBUG user mode
+------------------------------------------------------------------------------
+
+
+fw debug fwd on TDERROR_ALL_ALL=5   //debug on the fly a process
+fwd -d //run on debug mode a process 
+
+
+cpwd_admin list //on management check/debug process
+
+
+tellpm process:<process>     (stop)
+tellpm process:<process> t   (start)
+
+check /var/log/messages
+
+Usefull files: 
+
+/usr/local/apache2/logs/
+/web/cgi-bin2 // tcl directory
+/var/log/ftw_install.log // bash script log
+/var/log/converter 
+/etc/appliance_config/xml
+Core files are saved in /var/log/dump/usermode  (analyse with gdb : #./gdb fwm fwm.983.core, #bt)
+
+------------------------------------------------------------------------------
+
+Smart Gateway VPN debug Commands
+
+------------------------------------------------------------------------------
+
+vpn tu //list and kill tunnels
+
+fw ctl chain
+
+fw monitor -p > /tmp/outputfile.txt//Watch iIoO stack traffic and data being decrypted
+
+fwaccel off  //to make all the traffic go to the kernel
+fw ctl debug -buf 32000
+fw ctl debug -m VPN all
+fw ctl kdebug -f > /tmp/vpn.out
+fw ctl debug 0       ----- Turn off!!!!
+
+
+Turn on VPN kernel debug and send output to file /tmp/vpn.out
+
+Turn off after done!!!
+
+vpn debug trunc
+
+vpn debug off      ---- Turn off!!!
+
+
+ Debug the setting up key exchanges and tunnel testing. Output is in $FWDIR/log/vpn.elg and ike.elg
+ 
+------------------------------------------------------------------------------
+ Smart Center Filesystem
+------------------------------------------------------------------------------
+
+$FWDIR/conf 
+$FWDIR/log 
+
+<year>-<month>-<day>_<time>.log
+
+eg. 2011-09-02_105546.log - Name of logfile switched on 9/2/2011
+
+Names of log files when you execute a fw logswitch 
+/var/log/messages 
+$FWDIR/conf/Standard.pf //Rulebase saved by Smart Dashboard 
+$FWDIR/conf/rulebases_5_0.fws //Compiled rule bases pushed to gateway 
+ $CPDIR/log  //cpd daemon and intercommunications logs
+
+------------------------------------------------------------------------------
+ MDS file system
+-----------------
+$MDSDIR/log
+
+
+MDS logs
+--------
+$MDSDIR/conf
+
+MDS global databases
+--------------------
+cd $FWDIR
+
+
+current DMS, make sure you do a mdsenv
+
+MDS command lines
+------------------
+mdsstat //List all the DMS and their statuses
+mdsenv set MDS environment to a specific domain (listed in mdsstat)
+mcd change environment to domain specified in mdsenv
+mdsstop Stop all of MDS
+mdsstart Start all of MDS
+mdsstop_customer customer //start a single DMS
+mdsstart_customer customer //stop a single DMS
+mdscmd //command line version of the SDM GUI
+
+mdscmd runcrossdomainquery -all query_rulebase -n G_MDS
+
+
+
+Search all DM's rulebases dor G_MDS
+mdscmd runcrossdomainquery -all query_network_obj -c dms
+
+Search all DMS's object files for partial name "dms"
+
+
+------------------------------------------------------------------------------
+Advance Kernel DEBUG
+------------------------------------------------------------------------------
+
+1. Reset the debugs to the default.
+
+In case someone changed the setting in the past and since then the firewall was not rebooted we should set all back to the defaults.
+# fw ctl debug 0
+Defaulting all kernel debugging options
+
+2. Check the module list we can use and choose the requied ones
+
+With the following command you can see the modules with their options.
+[Expert@sgLondon]# fw ctl debug -m
+debug: option requires an argument — m
+Usage: fw ctl debug [-d ] [-s “”] [-v (“”|all)] [-x] [-m ] [-e expr | -i | -u] [+|-]
+Or: fw ctl debug [-t (NONE|ERR|WRN|NOTICE|INFO)] [-f (RARE|COMMON)]
+Or: fw ctl debug -buf [buffer size]
+-h – for helpWhere possible options are:Module: kiss
+Kernel debugging options: error warning ioctl memory misc chain driver pools handles vbuf pm rem sm dfa pmdump pmint htab bench ghtab mtctx queue thread
+Messaging threshold set to type=Info freq=CommonModule: kissflow
+Kernel debugging options: error warning memory pm compile dfa
+Messaging threshold set to type=Info freq=CommonModule: fw
+Kernel debugging options: error warning cookie crypt domain ex driver filter hold if install ioctl kbuf ld log machine memory misc packet q xlate xltrc conn synatk media sip vm chain bridge tcpstr scv packval sync ipopt link nat cifs drop route citrix misp portscan leaks mgcp sock mail spii chainfwd msnms wire balance dynlog smtp wap content mrtsync sam sock malware cmi aspii dos advp multik netquota monitor monitorall dfilter integrity epq cvpnd cptls ftp
+Messaging threshold set to type=Info freq=CommonModule: h323
+Kernel debugging options: error init h225 h245 ras decode align cpas
+Messaging threshold set to type=Info freq=Common
+
+Module: multik
+Kernel debugging options: error conn packet api message state packet_err counter event quota ioctl lock clb
+Messaging threshold set to type=Info freq=Common
+
+Module: BOA
+Kernel debugging options: fatal error warning info stat memory analyzer spider flow stream disasm lock
+Messaging threshold set to type=Info freq=Common
+
+Module: WS
+Kernel debugging options: fatal error warning info timestamp connection session parser body global stat memory address policy pfinder regexp coverage report_mgr spii uuid ioctl module mem_pool pkt_dump subject sslt cookie stream vs event
+Messaging threshold set to type=Info freq=Common
+
+Module: CI
+Kernel debugging options: fatal error warning info timestamp coverage subject memory module session address vs regexp ioctl policy profile filter uf av crypto stat
+Messaging threshold set to type=Info freq=Common
+
+Module: CPAS
+Kernel debugging options: error warning tcp api glue events conns pkts timer tcpinfo http ftp skinny notify sync
+Messaging threshold set to type=Info freq=Common
+
+Module: VPN
+Kernel debugging options: driver err packet policy sas rdp pcktdmp queue init sr mem comp xl counters mspi cphwd ref vin cluster nat l2tp tnlmon warn tcpt tagging ike ifnotify resolver gtp topology multik multicast
+Messaging threshold set to type=Info freq=Common
+
+3. Set the buffer Size
+
+The size of the buffer depends on how much modules and options you choose and how much the are going to generate.
+# fw ctl debug -buf 9600
+Initialized kernel debugging buffer to size 9600K
+
+4. Choose the modules an their options for the debug
+
+A) If we do not use any options than the default is error and warning or just error (or just error multicast, like at VPN):
+# fw ctl debug -m fw
+Kernel debugging buffer size: 9600KB
+Module: fw
+Enabled Kernel debugging options: error warning
+Messaging threshold set to type=Info freq=Common
+
+B) if you would set your own options, then just type them after the module name:
+# fw ctl debug -m fw packet drop sam
+Updated kernel’s debug variable for module fw# fw ctl debug -m fw
+Kernel debugging buffer size: 9600KB
+Module: fw
+Enabled Kernel debugging options: packet drop sam
+Messaging threshold set to type=Info freq=Common
+
+C) To add another option type “+”:
+# fw ctl debug -m fw + route
+Updated kernel’s debug variable for module fw# fw ctl debug -m fw
+Kernel debugging buffer size: 9600KB
+Module: fw
+Enabled Kernel debugging options: packet drop route sam
+Messaging threshold set to type=Info freq=Common
+
+D) To delete the option you have set and start it again type “- all”:
+# fw ctl debug -m fw – all
+Updated kernel’s debug variable for module fw# fw ctl debug -m fw
+Kernel debugging buffer size: 9600KB
+Module: fw
+Enabled Kernel debugging options: None
+
+5. Start writing debug into a file:
+
+Basic command is the “fw ctl kdebug”. The syntax is the following:
+
+One of the most important parameter is the ‘t’ or ‘T’, that write a timestamp to the entries. This is always required.
+# fw ctl kdebug ?
+Usage: fw ctl kdebug [-i | [-f] -o ] [-b ] [-t|-T] [-p fld1[,fld2..] [-m num [-s size]]
+-t/-T to print the time field (seconds/microseconds)
+-p to print specific fields all|proc|pid|date|mid|type|freq|topic|time|ticks|tid|text|err|host|vsid|cpu
+-m – number of cyclic files, -s – size of each
+
+A) Write it in a file:
+# fw ctl kdebug -T -f > samrules.txt(-o filename makes binary file, that is why I use the “>” sign)
+
+B) Or write in a file in background and to the output as well, but give back the cursor:
+# fw ctl kdebug -T -f | tee samdebug.txt &
+
+fwaccel off  //to make all the traffic go to the kernel
+
+It can happen that the debugging process eats up all the cpu and we loose the control and maybe sessions are dropped.
+Before this command ist started it is useful to create a crontab entry or a single script that kills this process after a couple of minutes.
+
+Lets do a bash script that kills debugging after 10 second:
+This example script writes in a file samrules.txt and stops after 10 seconds. Those values can be changed if you want.
+# vi debug.sh
+timeout=10 # in seconds
+fw ctl kdebug -T -f > samrules.txt & cmdpid=$! # Command to terminate
+# Start “watchdog” process to terminate the command
+# after $timeout seconds:
+(sleep $timeout; kill -9 $cmdpid) &
+watchdogpid=$!
+wait $cmdpid # wait for command
+kill $watchdogpid >/dev/null 2>&1
+
+Change the file permissions and we can start it:
+# chmod +x debug.sh
+# ./debug.sh
+
+The time in script should be as long as the reproduction time of the problem. It has no use if it is shorter.
+
+
+------------------------------------------------------------------------------
+VPN L2L edit userdef file
+------------------------------------------------------------------------------
+
+Connect to : mds02 or mds01 (the active one) Ex.: 10.54.66.74
+
+mdsenv lancelot-ny 
+mcd conf 
+ls -altr user.def*  //list the last modified files
+
+
+<Peer Gateway Address, followed by first IP address, the the last IP address and the subnet mask> you whant to negociate for the whole range of IPs.
+Usage case: VPN L2L Internal Gateway IPs to External VPN Gateway
+
+
+Ex:
+
+vim user.def.FW1
+
+40.84.226.10
+10.105.160.0/24 
+14:26:37: RODRIGO ALEXANDRE GOMES: 192.168.50.0/28 
+...
+....
+
+<185.75.141.14, 10.55.38.75, 10.55.38.75; 255.255.255.255>,
+<185.75.141.14, 10.55.38.76, 10.55.38.76; 255.255.255.255>,
+<37.59.194.99, 100.71.0.183, 100.71.0.183; 255.255.255.248>,
+<37.59.194.99, 100.71.18.103, 100.71.18.103; 255.255.255.255>,
+
+<213.56.215.22, 10.0.0.1, 10.255.255.254; 255.0.0.0>,
+<5.149.184.193, 10.176.120.1, 10.176.127.254; 255.255.248.0>,
+<5.149.184.193, 10.176.128.1, 10.176.191.254; 255.255.192.0>,
+<5.149.184.193, 10.176.192.1, 10.176.195.254; 255.255.252.0>,
+<5.149.184.193, 10.176.196.1, 10.176.197.254; 255.255.254.0>,
+<5.149.184.193, 10.176.200.1, 10.176.203.254; 255.255.252.0>,
+<5.149.184.193, 10.176.204.1, 10.176.204.254; 255.255.255.0>,
+<5.149.184.193, 10.176.236.1, 10.176.239.254; 255.255.252.0>,
+<5.149.184.193, 10.176.240.1, 10.176.255.254; 255.255.240.0>,
+<5.149.184.193, 10.49.125.1, 10.49.125.254; 255.255.255.0>,
+<5.149.184.193, 10.49.126.1, 10.49.127.254; 255.255.254.0>,
+<5.149.184.193, 10.49.112.1, 10.49.115.254; 255.255.252.0>,
+<5.149.184.193, 10.49.248.1, 10.49.251.254; 255.255.254.0>,
+.....
+....
+..
+.
+
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+Miscellaneous
+------------------------------------------------------------------------------
+
+Manage Routes (clish)
+------------------------------------------------------------------------------
+
+HostName> set static-route NETWORK_ADDRESS/MASK_LENGTH nexthop gateway address GATEWAY_IP_ADDRESS on  //add route
+HostName> set static-route NETWORK_ADDRESS/MASK_LENGTH nexthop gateway address GATEWAY_IP_ADDRESS off//delete route
+HostName> set static-route default nexthop gateway address GATEWAY_IP_ADDRESS on//to set the default route
+HostName> set static-route default nexthop gateway address GATEWAY_IP_ADDRESS off
+//disable the default route
+
+
+set static-route 10.29.50.0/23 nexthop gateway address 10.29.63.249 off
+set static-route 10.29.50.0/23 nexthop gateway address 10.29.63.254 on
+set static-route 10.29.48.0/23 nexthop gateway address 10.29.63.249 off
+set static-route 10.29.48.0/23 nexthop gateway address 10.29.63.254 on
+set static-route 10.29.54.0/23 nexthop gateway address 10.29.63.248 off
+set static-route 10.29.54.0/23 nexthop gateway address 10.29.63.254 on
+set static-route 10.29.52.0/23 nexthop gateway address 10.29.63.248 off
+set static-route 10.29.52.0/23 nexthop gateway address 10.29.63.254 on
+
+
+10.29.50.0      10.29.63.249    255.255.254.0   UGD       0 0          0 bond3.3803
+10.29.48.0      10.29.63.249    255.255.254.0   UGD       0 0          0 bond3.3803
+10.29.54.0      10.29.63.248    255.255.254.0   UGD       0 0          0 bond3.3803
+10.29.52.0      10.29.63.248    255.255.254.0   UGD       0 0          0 bond3.3803
+
+
+
+
+100.64.18.0/28 next-hop 10.55.192.254
+#save config//To save the changes permanently to configuration file
+show route destinations
+
+
+tcpdump
+------------------------------------------------------------------------------
+tcpdump -i <interface> -n -s 500 -w <outputfile> -X [command]
+
+eg. tcpdump -i eth1 -n -w /tmp/netout.cap -X [command]
+
+eg. tcpdump -i eth1 -n | tee /tmp/netout.cap --- dump to file and screen
+
+
+    -i <interface> commonly eth0/1/2/3
+    -n no DNS resolution, faster
+    -s 500 size of data packet
+    -w output file, can be used to feed into Wireshark
+    -X ascii and hex output
+
+Expression Modifiers
+
+    ! or not
+    && - and
+    || - or
+    NOTE: If you use (),||,&&,! then enclose the whole command
+    in quotes ' host 1.1.1.1 && host 2.2.2.2' because the shell
+    will use the && before tcpdump does.
+
+
+
+Common Command Operators
+
+    [ether] [src|dst] host <host> | net <net>/len
+    [tcp|udp] [src|dst] port <p1> | portrange <port> - <port>
+    [src|dst] net <netip>/mask
+    arp
+    icmp
+    proto
+
+Examples commands:
+
+    host 1.1.1.1
+    src net 10.1.1.0/24
+    src host 1.1.1.1 or (dst host 3.2.1.4 and src port 53)
+    ether src host 00:0c:29:80:11:0c -- monitor all data packets from MAC address
+    ether src host 00:0c:29:80:11:0c and arp -- monitor arp packets from MAC address
+    port 22 or arp ---- figure out why SSH is not connecting .... probably because ARPs are not being returned.
+
+
+------------------------------------------------------------------------------
+Wireshark
+------------------------------------------------------------------------------
+
+Expression Modifiers:
+
+    a == b
+    a != b
+    a and b
+    a or b
+    !(a or b)
+
+
+
+Common filters
+
+ARP
+
+    arp --- filter just arps
+    arp or icmp --- filter arps and icmp
+    icmp --- filter just icmp
+
+    IP
+    ip.host == 1.1.1.1
+    ip.src_host == 1.1.1.1
+    ip.dst_host == 1.1.1.1
+
+    TCP
+    tcp.port == 22
+    tcp.dstport == 22
+    tcp.srcport == 22
+
+Complex Filter Examples:
+
+    arp or ip.host == 1.1.1.1
+    arp or icmp and !(ip.host == 1.1.1.1)
+    NOTE: use !(ip.host == 1.1.1.1) and NOT ip.host != 1.1.1.1
+     
+cp_conf sic state
+ 
+[Expert@c4-gnt-mds01:0]# mdsenv 10.49.66.58
+[Expert@c4-gnt-mds01:0]# mcd
+changing to /opt/CPmds-R77/customers/cma-c4-fr-dc6dc7/CPsuite-R77/fw1/
+[Expert@c4-gnt-mds01:0]# cpprod_util fwisactivemanagement
+1
+[Expert@c4-gnt-mds01:0]# cpprod_util fwsetactivemanagement 0
+[Expert@c4-gnt-mds01:0]# cpprod_util fwisactivemanagement
+0
+[Expert@c4-gnt-mds01:0]# mcd
+changing to /opt/CPmds-R77/customers/cma-c4-fr-dc6dc7/CPsuite-R77/fw1/
+[Expert@c4-gnt-mds01:0]# cd conf
+[Expert@c4-gnt-mds01:0]# rm CPMIL*
+[Expert@c4-gnt-mds01:0]# rm applications.C*
+[Expert@c4-gnt-mds01:0]# pwd
+/opt/CPmds-R77/customers/cma-c4-fr-dc6dc7/CPsuite-R77/fw1/conf
+[Expert@c4-gnt-mds01:0]# cd mgha/
+[Expert@c4-gnt-mds01:0]# rm *
+[Expert@c4-gnt-mds01:0]# mdsstart_customer 10.49.66.58
+cpWatchDog is already running
+Starting CPshared for CMA cma-c4-fr-dc6dc7 [10.49.66.58]
+cpwd_admin:
+Process CPD.cma-c4-fr-dc6dc7 started successfully (pid=2880)
+Starting fw-1 for CMA cma-c4-fr-dc6dc7 [10.49.66.58]
+cpwd_admin:
+Process FWD.cma-c4-fr-dc6dc7 started successfully (pid=3029)
+FireWall-1:  Starting fwm (Remote Management Server)
+cpwd_admin:
+Process FWM.cma-c4-fr-dc6dc7 started successfully (pid=3058)
+FireWall-1: This is a Management Station. No Security Policy will be Loaded
+FireWall-1 started
+Starting SmartLog for CMA cma-c4-fr-dc6dc7 [10.49.66.58]
+
+
+SDT_Policy 2017-02-21 07:40:00
+Created by 'mihai_leonard_vasile'
+
+
+[Expert@c4-gnt-mds02:0]# mcd conf
+changing to /opt/CPmds-R77/customers/cma-c4-fr-dc6dc7-ny/CPsuite-R77/fw1/con                                                                                  f
+[Expert@c4-gnt-mds02:0]# rm CPMIL*
+[Expert@c4-gnt-mds02:0]# rm applications.C*
+[Expert@c4-gnt-mds02:0]# cd mgha
+[Expert@c4-gnt-mds02:0]# rm *
+[Expert@c4-gnt-mds02:0]# cpprod_util fwisactivemanagement
+1
+[Expert@c4-gnt-mds02:0]# cpprod_util fwisprimary
+0
+[Expert@c4-gnt-mds02:0]# mdsstart_customer 10.54.66.58
+
+
+CLI Install policies :
+
+mdsenv cma-c4-fr-dg-ny
+mcd conf
+
+/opt/CPmds-R77/customers/cma-c4-fr-massy/CPsuite-R77/fw1
+[Expert@c4-gnt-mds01:0]# fwm verify SDT_Policy
+ Security and Address Translation Policy Verification 'SDT_Policy'
+Rules Verified OK!
+
+fwm load Policy_Internet_DC6DC7_COLLAB cluster_DC6DC7_Collab_Internet
+
+[Expert@c4-gnt-mds01:0]# fwm load -m Policy_HO_FR_DG cluster_fw-HO_FR_DG
+
+Installing policy on R77 compatible targets:
+  Time object year_2016 in rule 420 has expired.
+  Time object Fin_2016 in rule 530 has expired.
+  Time object DEC_18_2016 in rule 638 has expired.
+  Time object EXP02-11-16 in rule 645 has expired.
+  Time object Dec23-17 in rule 719 has expired.
+  Time object Dec23-17 in rule 720 has expired.
+  Time object Dec23-17 in rule 721 has expired.
+  Warning: Services port conflict. port 8082 (tcp) serves both <tcp_8080-8094> and <tcp_8082>. Uncheck 'Match for Any' checkbox in the 'Advanced' dialogue for one of them.
+  Warning: Services port conflict. port 8000 (tcp) serves both <tcp_8000-8010> and <tcp_8000>. Uncheck 'Match for Any' checkbox in the 'Advanced' dialogue for one of them.
+  Warning: Services port conflict. port 7 (udp) serves both <udp_1-65535> and <echo-udp>. Uncheck 'Match for Any' checkbox in the 'Advanced' dialogue for one of them.
+ SDT_Policy.W: Security Policy Script generated into SDT_Policy.pf
+ export SDT_Policy.Set:
+ Compiled OK.
+ SDT_Policy:
+ Compiled OK.
+ export SDT_Policy.Set:
+ Compiled OK.
+ SDT_Policy:
+ Compiled OK.
+ Installing Security Gateway policy on: cluster_fw-sdt-fr-massy ...
+  Security Gateway policy installed successfully on fw-sdt-fr-massy-1 (member of cluster_fw-sdt-fr-massy)...
+  Security Gateway policy installed successfully on fw-sdt-fr-massy-2 (member of cluster_fw-sdt-fr-massy)...
+
+ Security Gateway policy Installation for all modules was successful
+ Security Gateway policy installation succeeded for:
+ fw-sdt-fr-massy-1 (member of cluster_fw-sdt-fr-massy) fw-sdt-fr-massy-2 (member of cluster_fw-sdt-fr-massy)
+
+
+[Expert@fw-sdt-fr-massy-1:0]# fw stat
+HOST      POLICY     DATE
+localhost SDT_Policy 20Feb2017  5:44:55 :  [>bond0] [<bond0] [>eth2.313] [<eth2.313] [>eth1.399] [<eth1.399]
+[Expert@fw-sdt-fr-massy-1:0]#
+
+
+
+
+I have modifed the corrupted HKLM_registry.data file and uploaded it to the SFTP.
+
+Please perform the following:
+
+1.Stop the corrupted registry CMA (If it's not down already)
+
+# mdsstop_customer <CMA IP>
+
+2.Remove the corrupted registry files:
+
+# mdsenv <CMA IP>
+# cd $CPDIR/registry/
+# rm HKLM_registry.data.corrupt*
+
+3.Backup the current registry file:
+
+# cp HKLM_registry.data HKLM_registry.data.CPbackup
+# replace it with the new file provided in the SFTP.
+
+4.Clear the cache files of the CMA:
+
+# mcd conf
+# rm CPMIL*
+# rm applications.C*
+
+5.Start the CMA:
+
+# mdsstart_customer <CMA IP>
+
+6.Force the CMA to be standby:
+
+# cpprod_util fwsetactivemanagment 0
+
+7.Check the status of it:
+
+# cpprod_util fwisactivemanagement
+
+8.Connect to the Active CMA Smartdashboard > Policy > Management High availability
+9. Try to synchronize both CMAs.
+
+10. If, sucseed, Make the Standby CMA as active (Same window).
+11.Open it's Smartdashboad and Push the policy.
+
+Check the results:
+
+A.Does policy installation sucseed? Test it several times.
+B.How long does it take to install it?
+C.Open the following directory on the CMA - Check if there are corrupted files:
+
+# mdsenv <CMA IP>
+# cd $CPDIR/registry/
+# ls -la | grep *corrupt*
+
+
+
+
+_____________________________________________________________________
+
+SIC Certs : 
+
+
+
+
+1. Connect via ssh or console connection to the MDS which houses the Secondary CMA, then run the following commands:
+
+# mdsenv <cma name>
+
+# mcd conf
+
+# mdsstop_customer <cma name>
+
+# cp_conf sic init <pre-shared password>
+
+# mdsstart_customer <cma name>
+
+2. Make sure all processes are up and running
+
+# mdsstat
+
+Next we will complete the procedure through SmartDashboard connected to the primary CMA
+
+3. Open SmartDashboard of the Primary CMA
+
+4. Open the object representing the Secondary CMA
+
+5. Click on the communication button in the General Properties section
+
+6. Click on the Reset button
+
+7. Enter the pre-shared password which you used in the first steps on the Secondary CMA and click on the initialize button
+
+8. Once initialized, click on the test button to test communication between the primary in Secondary CMA.
+
+ 
+
+
+
+
+reestablish the SIC between 2 CMAs and the cluster ?
+
+On the Multi-Domain Management Server (MDS):
+
+    Connect to the MDS via Command Line
+
+    Browse to the context of the relevant CMA:
+
+      # mdsenv < CMA NAME >
+      # mcd
+
+    Backup the sic_cert.p12 file:
+
+      # cd $CPDIR/conf
+      # mv sic_cert.p12 sic_cert.p12_BKP
+
+    Recreate the cp_mgmt certificate:
+
+       # cpca_client revoke_cert -n "cn=cp_mgmt"
+       # cpca_client create_cert -n "cn=cp_mgmt" -f new_sic_cert.p12
+
+    Stop the Domain / CMA:   # mdsstop_customer < CMA NAME >
+
+    Rename the newly created p12 file:   # mv new_sic_cert.p12 sic_cert.p12
+
+    Start the Domain / CMA:   # mdsstart_customer < CMA NAME >
+
+
+
+/opt/CPmds-R77/customers/cma-c4-be-ny/CPshrd-R77/conf
+
+cpca_client create_cert -n "cn=cp_mgmt_cma-c4-be" -f new_sic_cert.p12
+
+
+M2
+CN=cp_mgmt_cma-c4-be,O=cma-c4-be.carrefour.com.fcix9g
+
+CN=cp_mgmt_cma-c4-be,O=cma-c4-be.carrefour.com.fcix9g
+
+
+cpca_client lscert -stat Valid | grep -i -A 2 cp_mgmt
+
+
+Verify that the "CPCA" process is up and running in the relevant context:
+
+[Expert@HostName]# mdsstat
+
+Switch to the relevant context:
+
+    For MDS:
+    [Expert@HostName]# mdsenv
+
+    For CMA/Domain:
+    [Expert@HostName]# mdsenv <CMA/Domain_Name>
+
+
+
+Back up the existing certificate:
+
+[Expert@HostName]# cp $CPDIR/conf/sic_cert.p12  $CPDIR/conf/sic_cert.p12_BACKUP
+
+Run the sicRenew -d command.
+
+Stop Check Point services in the relevant context:
+
+    For MDS:
+    [Expert@HostName]# mdsstop -m
+
+    For CMA/Domain:
+    [Expert@HostName]# mdsstop_customer <CMA/Domain_Name>
+
+
+
+Rename the new certificate:
+
+[Expert@HostName]# mv $CPDIR/conf/new_sic_cert.p12  $CPDIR/conf/sic_cert.p12 
+
+Start Check Point services in the relevant context:
+
+    For MDS:
+    [Expert@HostName]# mdsstart -m
+
+    For CMA/Domain:
+    [Expert@HostName]# mdsstart_customer <CMA/Domain_Name>
+
+
+
+1. coredumps were generated (/var/log/dump/usermode) : 
+2. Cluster_VPN_Group (HA)
+3. Cpinfo from from the CMA which manages this FW : 
+4. The issue was present on the cluster (fw-gnt-vpn-group-m2 & fw-gnt-vpn-group-ny), we have also switched the master
+5  The policy was pushed before the issue
+6. No change on the peer side
+7. CPU utilization was normal
+
+
+]0;admin@fw-gnt-vpn-group-ny:~[Expert@fw-gnt-vpn-group-ny:0]# fw tab -t vpn_queues -x
+This will clear all the entries in table vpn_queues !!!
+Are you sure (yes/no)? [n] y
+
+Clearing table vpn_queues
+]0;admin@fw-gnt-vpn-group-ny:~[Expert@fw-gnt-vpn-group-ny:0]# fw tab -t ike2esp -x
+This will clear all the entries in table ike2esp !!!
+Are you sure (yes/no)? [n] y
+
+Clearing table ike2esp
+]0;admin@fw-gnt-vpn-group-ny:~[Expert@fw-gnt-vpn-group-ny:0]# fw tab -t peer2ike -x
+This will clear all the entries in table peer2ike !!!
+Are you sure (yes/no)? [n] y
+
+Clearing table peer2ike
+]0;admin@fw-gnt-vpn-group-ny:~[Expert@fw-gnt-vpn-group-ny:0]# fw tab -t ike2peer -x 
+This will clear all the entries in table ike2peer !!!
+Are you sure (yes/no)? [n] y
+
+Clearing table ike2peer
+
+]0;admin@fw-gnt-vpn-group-ny:~[Expert@fw-gnt-vpn-group-ny:0]# fw tab -s | grep ike
+
+
+IKE traffic can also be logged. IKE traffic is logged to $FWDIR/log/IKE.elg
+
+UsageUsage: vpn debug < on [ DEBUG_TOPIC=level ] | off | ikeon | ikeoff | trunc | timeon <SECONDS>|
+timeoff
+
+vpn debug on DEBUG_TOPIC=level |off timeon<SECONDS>]|timeoff
+
+vpn debug ikeon | ikeoff timeon|timeoff
+
+vpn debug trunc
+
+
+Account Name: 1-9722733971
+Account Password: PhcSeX7C
+Account Valid Until: 10/11/2017
+
+
+
+VPN DEBUG on
+rm -rf vpnd.elg*
+vpn debug trunc; vpn debug on TDERROR_ALL_ALL=5;  tcpdump -Penni any port 500 and host 168.63.140.232
+vpn debug ikeon
+fwaccel off
+
+VPN DEBUG off
+
+fw ctl debug 0
+fwaccel dbg resetall ; sim dbg resetall
+vpn debug off
+vpn debug ikeoff
+
+
+This will clear all the entries in table ike2peer !!!
+fw tab -t ike2peer -x
+
+
+A kernel Memory leak that is overflowing the kernel _I_
+procedure
+sk35496
+
+
+
+[Expert@fw-gnt-vpn-group-ny:0]# cat vpn_queue_monitor_every_5min.sh
+#! /bin/bash
+# VPND Monitor
+
+logfile="/var/log/vpn_queues_every5min.txt"
+interval=300
+
+
+while :
+do
+        echo "========================================================================== `date`" >> $logfile
+        echo vpn_queues: `fw tab -t vpn_queues -s | tail -1` >> $logfile
+        echo ike2esp: `fw tab -t ike2esp -s | tail -1` >> $logfile
+        echo peer2ike: `fw tab -t peer2ike -s | tail -1` >> $logfile
+        echo ike2peer: `fw tab -t ike2peer -s | tail -1` >> $logfile
+        echo "========================================================================================================" >> $logfile
+        sleep $interval
+done
+
+-- 
+SmartView Tracker logs show:
+
+    encryption failure: no response from peer
+    encryption fail reason: Packet is dropped because there is no valid SA
+
+Kernel debug ('fw ctl debug -m fw + conn drop nat link') shows that Security Gateway was not able to create a symbolic link in the Connections Table for the IKE packets (UDP port 500) due to a previous existing link. As a result, IKE packets are dropped:
+
+   [-- Stateful VM outbound: Entering (.) --];
+;Before VM: <X.X.X.X:500 -> Y.Y.Y.Y:500 IPP 17> ...
+;fw_xlate_match: conn=<X.X.X.X:500 -> Y.Y.Y.Y:500 IPP 17>;
+;fw_xlate_match: cache hit!;
+;fwconn_init_links: Creating links (outbound). One way links=0, Replies from any=0;
+;fwconn_set_links_outbound: create link srs_i <dir 0, Y.Y.Y.Y:500 -> X.X.X.X:500 IPP 17> -> <dir 1, X.X.X.X:500 -> Y.Y.Y.Y:500 IPP 17>(0x6);
+;h_slink: link already exists;
+;fwconn_set_link: failed to set the link (-3);
+;fwconn_set_link: Not overriding previous link (previous entry is not a closing TCP conn nor a dynamic routing conn);
+;FW-1: fwconn_set_links_outbound: fwconn_set_link(srs_i) failed <dir 0, Y.Y.Y.Y:500 -> X.X.X.X:500 IPP 17> -> <dir 1, X.X.X.X:500 -> Y.Y.Y.Y:500 IPP 17>;
+;FW-1: fwconn_init_links: Failed to set server-side links;
+;FW-1: fw_conn_post_inspect: fwconn_init_links failed. Dropping packet;
+;fw_log_drop: Packet proto=17 X.X.X.X:500 -> Y.Y.Y.Y:500 dropped by fw_conn_post_inspect Reason: fwconn_init_links (OUTBOUND) failed;
+;After  VM: <X.X.X.X:500 -> Y.Y.Y.Y:500 IPP 17> (len=...) ;
+;VM Final action=DROP;
+
+
+==================================================== 
+
+
+
+vpn overlap_encdom communities
+
+[Expert@fw-gnt-vpn-group-m2:0]# fw tab -s | grep ike
+
+========================================================================== Tue Sep 12 19:39:36 GMT 2017
+vpn_queues: localhost vpn_queues 458 64584 64587 0
+ike2esp: localhost ike2esp 459 25200 25200 0
+peer2ike: localhost peer2ike 460 82 85 0
+ike2peer: localhost ike2peer 461 25200 25200 0
+========================================================================================================
+
+
+RE: VPN issue IKE failure
+
+Excellent! Thank you for letting me know. Please, make sure that those partner lab devices are now trying to establish a VPN over IKEv2 with our gateway. You can also misconfigure the peers to use incorrect proposals as before purposely.
+
+I also suggest to close this ticket, and if you succeed to reproduce it after enabling the lab IKEv2 peers, feel free to reopen it. Is that acceptable for you?
+
+Best Regards,
+
+
+
+Identity Awarness: 
+
+fw tab -t pdp_sessions -t pdp_super_sessions -t pdp_encryption_keys -t pdp_whitelist -t pdp_timers -t pdp_expired_timers -t pdp_ip -t pdp_net_reg -t pdp_net_db -t pdp_cluster_stat -t pep_pdp_db -t pep_networks_to_pdp_db -t pep_net_reg -t pep_reported_network_masks_db -t pep_port_range_db -t pep_async_id_calls -t pep_client_db -t pep_identity_index -t pep_revoked_key_clients -t pep_src_mapping_db -t pep_log_completion -x -y
+
+
+fw tab -t connections -x -y
+
+
+
+cpwd_admin stop -name CPD -path "$CPDIR/bin/cpd" -command "fw kill cpd"
+cpwd_admin start -name CPD -path "$CPDIR/bin/cpd" -command "cpd" 
+
+------------------------------------------------------------------------------------------
+FW Gateway Log switch gaia
+------------------------------------------------------------------------------------------
+//Connect to the desired gateway
+
+cd $FWDIR/log
+
+
+------------------------------------------------------------------------------------------
+MLM log fetch
+------------------------------------------------------------------------------------------
+//First connect to the used MLM
+
+mdsstat
+mdsenv pharien-clm-ny
+mcd
+
+
+FW
+@fw-dc-gnt-fr-ny-1]# fw logswitch
+Log file has been switched to: 2015-07-07_093958.log
+
+MLM
+[Expert@:0]#
+fw fetchlogs -f 2018-01-17_184103.log fw-tp-fr-galitt-dc2-1
+
+Clear Swap memory Linux
+
+# echo 3 > /proc/sys/vm/drop_caches && swapoff -a && swapon -a && printf '\n%s\n' 'Ram-cache and Swap Cleared'
+
+OR
+
+$ su -c "echo 3 >'/proc/sys/vm/drop_caches' && swapoff -a && swapon -a && printf '\n%s\n' 'Ram-cache and Swap Cleared'" root
+
+
+___________________________________________________________________________________
+fw monitor -e 'accept host(10.113.132.58) and host(100.64.2.80) and port(22);'
+
+fw monitor -e "accept net(y.y.y.y,28);" 
+  
+fw monitor -e 'accept src=10.201.243.24;' -o /var/tmp/es_104030.cap 
+
+141
+
+
+Fortinet
+
+diagnose debug reset
+diagnose debug enable
+diagnose debug flow filter clear
+diagnose debug flow filter daddr 10.244.3.33
+diagnose debug flow filter dport 514
+diagnose debug flow show con enable
+diagnose debug flow show fun enable
+diagnose debug flow trace start 20 
+
