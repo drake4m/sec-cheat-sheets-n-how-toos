@@ -123,3 +123,130 @@ Firewall management processes must comply with internal security standards and r
 
 This approach ensures that all necessary steps for integrating the Playflows solution are thoroughly planned, from the initial diagnosis to the production deployment. It also allows for comprehensive documentation at each stage to ensure rigorous tracking and guarantee the sustainability of the implemented solution.
 
+
+
+----
+
+1. Contexte et Objectifs
+
+Fortis Belgique gère un parc hétérogène de firewalls provenant de différentes technologies et constructeurs. Actuellement, la gestion de ces équipements implique des processus manuels ou semi-automatisés, ce qui peut engendrer des inefficacités, des erreurs humaines et des incohérences entre les politiques de sécurité appliquées.
+
+L’objectif de cette démarche est d’intégrer la solution Playflows afin d'automatiser et standardiser la gestion des politiques de sécurité sur l’ensemble des firewalls. Playflows devra permettre d'unifier et d'automatiser la configuration des règles, objets et politiques de sécurité, indépendamment des spécificités des différents constructeurs de firewalls. L’ensemble des actions liées à la configuration, la modification et la gestion des politiques de sécurité doit être facilité et sécurisé par cette solution.
+
+2. Périmètre du Projet
+
+L'intégration de la solution Playflows concernera l’ensemble des firewalls déployés au sein du réseau de Fortis Belgique, couvrant plusieurs technologies (multi-vendeurs). Le projet inclura :
+
+L’audit de l’existant (firewalls, configurations, conventions).
+
+La standardisation et la remédiation des configurations.
+
+La réalisation d’un POC pour valider la solution en environnement de test.
+
+La mise en production de la solution et des processus standardisés.
+
+
+3. Étapes du Projet
+
+3.1 Prérequis
+
+Avant de commencer l’intégration de Playflows, plusieurs prérequis doivent être remplis, principalement orientés vers l’audit de l’infrastructure actuelle et la mise en place des fondations nécessaires à la gestion future des firewalls.
+
+3.1.1 Audit du parc de firewalls Fortis
+
+Il est indispensable de procéder à un audit approfondi de l’ensemble du parc de firewalls existant afin d’avoir une vue d’ensemble des équipements, de leurs spécificités, et des politiques actuelles. Cet audit comportera plusieurs volets :
+
+État des lieux des équipements : identification des modèles de firewalls en place, de leurs spécificités techniques (versions logicielles, capacités, limitations).
+
+Standardisation existante et conventions : examen des standards appliqués (ou non) aux configurations actuelles, y compris les règles de nommage, les conventions de sécurité, et les contraintes spécifiques par environnement (production, développement, etc.).
+
+CMDB (Configuration Management Database) : revue de la CMDB pour garantir qu’elle liste tous les équipements avec leurs emplacements, schémas réseau, versions logicielles, etc.
+
+Audit des politiques et objets MEP (Multi-Environment Policy) : identification des politiques de sécurité actuelles, des objets partagés, et des éventuels doublons ou incohérences.
+
+
+3.2 Standardisation et Remédiation
+
+Sur la base des résultats de l’audit, un plan de remédiation sera établi pour standardiser les configurations et adresser les éventuels problèmes. Cette étape est essentielle pour garantir que la solution Playflows puisse fonctionner efficacement et de manière uniforme sur l’ensemble des firewalls.
+
+3.2.1 Plan d'action de standardisation
+
+Établir un plan de standardisation : définir un modèle de configuration uniforme pour les politiques de sécurité, adapté aux différentes technologies de firewalls en place chez Fortis.
+
+Recommandations de remédiation : étude des configurations actuelles pour préconiser les modifications nécessaires. Cela inclut la correction des incohérences, la suppression des doublons, et l’harmonisation des objets et règles de sécurité.
+
+Mode opératoire : création d’un guide détaillé pour la mise en place des standards, couvrant les étapes à suivre pour implémenter les changements sur chaque technologie de firewall.
+
+Documentation : documentation détaillée de toutes les actions prises, incluant les justifications des changements apportés et les impacts attendus.
+
+
+3.2.2 Processus et procédures
+
+Établir des processus : définir et documenter les processus liés à la gestion future des firewalls sous Playflows, notamment pour la gestion des changements, les mises à jour, et la création de nouvelles politiques.
+
+Rédaction des procédures : rédiger des procédures opérationnelles standardisées pour l'utilisation de Playflows au quotidien, incluant des scénarios de gestion de pannes et de support.
+
+
+3.3 Proof of Concept (POC)
+
+Un POC sera réalisé en environnement de laboratoire pour valider la faisabilité de l’intégration de Playflows et garantir que la solution répond aux besoins spécifiques de Fortis.
+
+3.3.1 Préparation du POC
+
+Environnement de laboratoire : préparer un environnement de test comprenant des firewalls de différentes technologies, configurés avec des politiques de sécurité standardisées dérivées de l’audit et des recommandations.
+
+Tests de base : tester Playflows dans cet environnement pour valider l’automatisation de la gestion des politiques, la compatibilité avec les différentes technologies de firewalls, et la capacité à appliquer des modifications sans perturber le réseau.
+
+
+3.3.2 Personnalisation de la solution
+
+Customisation de Playflows : ajuster la solution en fonction des besoins et contraintes spécifiques de Fortis, en prenant en compte les différentes technologies de firewalls et les exigences locales.
+
+Validation des résultats : vérifier que la solution répond aux attentes en matière de performance, d’automatisation, et de gestion des règles. Documenter toute anomalie et les ajustements effectués.
+
+
+3.4 Mise en Production
+
+Une fois le POC validé, la solution sera déployée en environnement de production. Cette étape inclura la mise en production des processus de standardisation et des outils associés.
+
+3.4.1 Déploiement du modèle standardisé
+
+Application des standards : déployer les standards et remédiations définis lors de la phase précédente sur l’ensemble des firewalls de production.
+
+Gestion des risques : mettre en place des mécanismes de rollback et des plans de continuité en cas de problèmes durant la transition.
+
+
+3.4.2 Mise en production de Playflows
+
+Déploiement de la solution : installer et configurer Playflows dans l’environnement de production.
+
+Formation des équipes : former les équipes techniques à l’utilisation de la solution, à la gestion des modifications, et au suivi des incidents via Playflows.
+
+Support technique : formaliser et communiquer le processus de support technique en cas d’incident, incluant les niveaux de support disponibles et les procédures d’escalade.
+
+
+4. Livrables
+
+Rapport d’audit du parc de firewalls.
+
+Plan de standardisation et remédiation, incluant les recommandations.
+
+Procédures et documentation pour l’utilisation et la gestion de Playflows.
+
+Validation du POC et rapport de tests.
+
+Mise en production de Playflows et des politiques standardisées.
+
+
+5. Contraintes et Hypothèses
+
+La solution Playflows doit être compatible avec toutes les technologies de firewalls utilisées par Fortis.
+
+La transition vers Playflows ne doit pas interrompre les services critiques durant le déploiement.
+
+Les processus de gestion des firewalls doivent respecter les normes de sécurité internes et les exigences de conformité (ex. GDPR).
+
+
+Cette approche détaillée permet de s’assurer que toutes les étapes nécessaires à l’intégration de la solution Playflows sont bien planifiées, du diagnostic initial à la mise en production. Elle permet également de documenter de manière exhaustive chaque étape, afin de garantir un suivi rigoureux et d’assurer la pérennité de la solution mise en place.
+
+
