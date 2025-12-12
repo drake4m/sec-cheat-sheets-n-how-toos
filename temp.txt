@@ -1,0 +1,58 @@
+Bonjour,
+
+Pour une migration Jira Data Center → Jira Cloud (ex. jira.social…fr → jira.mcas.atlassian.net) il n’est pas réaliste de demander une ouverture "par IP fixes" ou de fournir uniquement *.atlassian.com / *.amazonaws.com :
+
+Atlassian Cloud n’a pas d’IP individuelles fixes (CDN / infrastructure dynamique). Atlassian recommande d’utiliser des listes officielles (IP ranges) ou des allowlists par domaines selon le cas. 
+
+
+*.amazonaws.com est beaucoup trop large (équivaut à "autoriser AWS"), et n’est pas un besoin générique : pour les assistants de migration, Atlassian publie une liste ciblée d’URLs à autoriser. 
+
+Proposition (recommandée) : passer par le proxy sortant dédié existant
+
+Comme nous avons déjà des proxies dédiés serveurs/applicatifs, la meilleure approche est :
+
+Côté serveurs Jira DC
+
+Configurer Jira pour utiliser un outbound proxy (paramètres JVM http(s).proxyHost/Port dans setenv.sh / setenv.bat). 
+
+
+Côté proxy
+
+Mettre une allowlist FQDN/SNI (HTTPS/443) uniquement sur les endpoints requis par Jira Cloud Migration Assistant (JCMA) + votre site destination. Atlassian fournit la liste officielle suivante (susceptible d’évoluer, donc à maintenir) : 
+Atlassian Support
+
+api.media.atlassian.com
+
+api-private.atlassian.com
+
+marketplace.atlassian.com
+
+api.atlassian.com
+
+migration.atlassian.com
+
+migration-service.services.atlassian.com
+
+Destination : jira.mcas.atlassian.net
+
+Stockage migration (S3) : *.s3.us-west-2.amazonaws.com + quelques hôtes S3 spécifiques si le wildcard n’est pas supporté (détaillés par Atlassian). 
+
+
+Logs/rapports : rps--*--migration-report-center--report-data.s3.*.amazonaws.com / micros--*... (ou hôtes explicites si pas de wildcard). 
+
+
+Côté firewall
+
+Limiter l’ouverture à : Jira DC (ou nœud de migration dédié) → proxy puis proxy → Internet (TCP/443), avec logging.
+
+Remarque importante
+
+La "Allowlist" interne Jira (menu Administration > System > Allowlist) est une fonction applicative (CORS / contenu / URLs autorisées) : elle ne remplace pas un contrôle réseau firewall/proxy. 
+
+
+Alternative (si proxy impossible)
+
+Utiliser l’allowlist par IP ranges Atlassian (https://ip-ranges.atlassian.com/). 
+
+
+C’est nettement moins fin qu’une allowlist FQDN via proxy.
