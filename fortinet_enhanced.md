@@ -4,27 +4,27 @@
 > **Scope**: FortiGate NGFW, FortiManager, FortiAnalyzer, Advanced Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    FORTIGATE ENTERPRISE ARCHITECTURE                          │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                               │
+┌────────────────────────────────────────────────────────────────────────────┐
+│                    FORTIGATE ENTERPRISE ARCHITECTURE                       │
+├────────────────────────────────────────────────────────────────────────────┤
+│                                                                            │
 │  ┌──────────────┐       ┌──────────────┐       ┌──────────────┐            │
 │  │ FortiManager │◄─────►│  FortiGate   │◄─────►│  FortiGate   │            │
 │  │   Central    │  541  │   Primary    │  HA   │  Secondary   │            │
 │  │  Management  │  TCP  │   Active     │Sync   │   Standby    │            │
 │  └──────┬───────┘       └──────┬───────┘       └──────┬───────┘            │
-│         │                      │                        │                    │
+│         │                      │                      │                    │
 │    ┌────▼────┐          ┌──────▼───┐            ┌──────▼───┐               │
-│    │ FortiView│          │   NPU    │            │   NPU    │               │
-│    │Analytics │          │ NP6/NP7  │            │ NP6/NP7  │               │
+│    │ FortiView│         │   NPU    │            │   NPU    │               │
+│    │Analytics │         │ NP6/NP7  │            │ NP6/NP7  │               │
 │    └─────────┘          └──────────┘            └──────────┘               │
-│                                │                        │                    │
-│                          ┌──────▼───┐            ┌──────▼───┐               │
-│                          │   SPU    │            │   SPU    │               │
-│                          │  CP9/CP10│            │  CP9/CP10│               │
-│                          └──────────┘            └──────────┘               │
-│                                                                               │
-└─────────────────────────────────────────────────────────────────────────────┘
+│                                │                        │                  │
+│                          ┌──────▼───┐            ┌──────▼───┐              │
+│                          │   SPU    │            │   SPU    │              │
+│                          │  CP9/CP10│            │  CP9/CP10│              │
+│                          └──────────┘            └──────────┘              │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -52,86 +52,86 @@
 ### FortiGate Packet Processing Chain
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                        FORTIGATE PACKET FLOW CHAIN                            │
+│                        FORTIGATE PACKET FLOW CHAIN                           │
 ├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                                │
+│                                                                              │
 │  INGRESS PACKET                                                              │
-│       │                                                                       │
-│       ▼                                                                       │
-│  ┌─────────────┐    Stage 1: NPU Offload Check                             │
-│  │  NPU Engine │    Function: FastPath Decision                            │
-│  │  (NP6/NP7)  │    Bypass Kernel for Known Sessions                       │
-│  └──────┬──────┘                                                           │
-│         │                                                                   │
-│         ▼                                                                   │
-│  ┌─────────────┐    Stage 2: DoS Protection                               │
-│  │ DoS Policy  │    Function: Rate Limiting                               │
-│  │   Engine    │    SYN Flood, ICMP Flood Protection                       │
-│  └──────┬──────┘                                                          │
-│         │                                                                  │
-│         ▼                                                                  │
-│  ┌─────────────┐    Stage 3: IP Integrity                                │
-│  │  IP Header  │    Function: Header Validation                           │
-│  │  Validation │    TTL, Checksum, Fragment Assembly                      │
-│  └──────┬──────┘                                                         │
-│         │                                                                 │
-│         ▼                                                                 │
-│  ┌─────────────┐    Stage 4: IPSec Decryption                           │
-│  │VPN Processor│    Function: Tunnel Termination                         │
-│  │  (SPU/CPU)  │    IPSec/SSL VPN Processing                            │
-│  └──────┬──────┘                                                        │
-│         │                                                                │
-│         ▼                                                                │
-│  ┌─────────────┐    Stage 5: DNAT (VIP)                                │
-│  │ Destination │    Function: Virtual IP Translation                     │
-│  │     NAT     │    Port Forwarding                                     │
-│  └──────┬──────┘                                                       │
-│         │                                                               │
-│         ▼                                                               │
-│  ┌─────────────┐    Stage 6: Routing Decision                         │
-│  │   Routing   │    Function: Route/Policy Route                       │
-│  │   Engine    │    ECMP, SD-WAN Selection                            │
-│  └──────┬──────┘                                                      │
-│         │                                                              │
-│         ▼                                                              │
-│  ┌─────────────┐    Stage 7: Policy Lookup                           │
-│  │  Firewall   │    Function: Security Policy Match                   │
-│  │   Policy    │    Source/Dest/Service/App Control                   │
-│  └──────┬──────┘                                                     │
-│         │                                                             │
-│         ▼                                                             │
-│  ┌─────────────┐    Stage 8: Session Creation                        │
-│  │   Session   │    Function: State Table Entry                       │
-│  │   Helper    │    ALG Processing                                   │
-│  └──────┬──────┘                                                    │
-│         │                                                            │
-│         ▼                                                            │
-│  ┌─────────────┐    Stage 9: UTM Inspection                        │
-│  │UTM Processor│    Function: AV/IPS/AppCtrl/WebFilter              │
-│  │ (Proxy/Flow)│    DLP/Email Filter/File Filter                    │
-│  └──────┬──────┘                                                   │
-│         │                                                           │
-│         ▼                                                           │
-│  ┌─────────────┐    Stage 10: SNAT (IP Pool)                      │
-│  │   Source    │    Function: Outbound NAT                         │
-│  │     NAT     │    Dynamic/Static Pool                            │
-│  └──────┬──────┘                                                  │
-│         │                                                          │
-│         ▼                                                          │
-│  ┌─────────────┐    Stage 11: IPSec Encryption                   │
-│  │VPN Processor│    Function: Tunnel Encapsulation                │
-│  │  (SPU/CPU)  │    Policy-based/Route-based VPN                 │
-│  └──────┬──────┘                                                 │
-│         │                                                         │
-│         ▼                                                         │
-│  ┌─────────────┐    Stage 12: Egress Shaping                    │
-│  │Traffic Shaper│   Function: QoS/Bandwidth Management            │
-│  │   Engine    │    Priority Queuing                             │
-│  └──────┬──────┘                                                │
-│         │                                                        │
-│         ▼                                                        │
-│  EGRESS PACKET                                                   │
-│                                                                   │
+│       │                                                                      │
+│       ▼                                                                      │
+│  ┌─────────────┐    Stage 1: NPU Offload Check                               │
+│  │  NPU Engine │    Function: FastPath Decision                              │
+│  │  (NP6/NP7)  │    Bypass Kernel for Known Sessions                         │
+│  └──────┬──────┘                                                             │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌─────────────┐    Stage 2: DoS Protection                                  │
+│  │ DoS Policy  │    Function: Rate Limiting                                  │
+│  │   Engine    │    SYN Flood, ICMP Flood Protection                         │
+│  └──────┬──────┘                                                             │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌─────────────┐    Stage 3: IP Integrity                                    │
+│  │  IP Header  │    Function: Header Validation                              │
+│  │  Validation │    TTL, Checksum, Fragment Assembly                         │
+│  └──────┬──────┘                                                             │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌─────────────┐    Stage 4: IPSec Decryption                                │
+│  │VPN Processor│    Function: Tunnel Termination                             │
+│  │  (SPU/CPU)  │    IPSec/SSL VPN Processing                                 │
+│  └──────┬──────┘                                                             │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌─────────────┐    Stage 5: DNAT (VIP)                                      │
+│  │ Destination │    Function: Virtual IP Translation                         │
+│  │     NAT     │    Port Forwarding                                          │
+│  └──────┬──────┘                                                             │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌─────────────┐    Stage 6: Routing Decision                                │
+│  │   Routing   │    Function: Route/Policy Route                             │
+│  │   Engine    │    ECMP, SD-WAN Selection                                   │
+│  └──────┬──────┘                                                             │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌─────────────┐    Stage 7: Policy Lookup                                   │
+│  │  Firewall   │    Function: Security Policy Match                          │
+│  │   Policy    │    Source/Dest/Service/App Control                          │
+│  └──────┬──────┘                                                             │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌─────────────┐    Stage 8: Session Creation                                │
+│  │   Session   │    Function: State Table Entry                              │
+│  │   Helper    │    ALG Processing                                           │
+│  └──────┬──────┘                                                             │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌─────────────┐    Stage 9: UTM Inspection                                  │
+│  │UTM Processor│    Function: AV/IPS/AppCtrl/WebFilter                       │
+│  │ (Proxy/Flow)│    DLP/Email Filter/File Filter                             │
+│  └──────┬──────┘                                                             │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌─────────────┐    Stage 10: SNAT (IP Pool)                                 │
+│  │   Source    │    Function: Outbound NAT                                   │
+│  │     NAT     │    Dynamic/Static Pool                                      │
+│  └──────┬──────┘                                                             │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌─────────────┐    Stage 11: IPSec Encryption                               │
+│  │VPN Processor│    Function: Tunnel Encapsulation                           │
+│  │  (SPU/CPU)  │    Policy-based/Route-based VPN                             │
+│  └──────┬──────┘                                                             │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌─────────────┐    Stage 12: Egress Shaping                                 │
+│  │Traffic Shaper│   Function: QoS/Bandwidth Management                       │
+│  │   Engine    │    Priority Queuing                                         │
+│  └──────┬──────┘                                                             │
+│         │                                                                    │
+│         ▼                                                                    │
+│  EGRESS PACKET                                                               │
+│                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -171,43 +171,43 @@ diagnose sys session clear                  # Clear sessions
 ### NAT Architecture
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                     FORTIGATE NAT PROCESSING                            │
+│                     FORTIGATE NAT PROCESSING                           │
 ├────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
+│                                                                        │
 │  NAT ORDER OF OPERATIONS:                                              │
 │  1. DNAT (VIP) - Inbound                                               │
 │  2. Central SNAT - After routing                                       │
 │  3. Policy NAT - Per firewall policy                                   │
-│                                                                          │
-│  ┌──────────────────────────────────────────────────────┐             │
-│  │                  DNAT FLOW (VIP)                      │             │
-│  ├──────────────────────────────────────────────────────┤             │
-│  │                                                        │             │
-│  │  External: 203.0.113.10:443 ──► Internal: 10.1.1.10:443│            │
-│  │                                                        │             │
-│  │  config firewall vip                                  │             │
-│  │      edit "WebServer-VIP"                            │             │
-│  │      set extip 203.0.113.10                          │             │
-│  │      set mappedip 10.1.1.10                          │             │
-│  │      set extintf "wan1"                              │             │
-│  │      set portforward enable                          │             │
-│  │      set extport 443                                 │             │
-│  │      set mappedport 443                              │             │
-│  │  end                                                  │             │
-│  └──────────────────────────────────────────────────────┘             │
-│                                                                          │
-│  ┌──────────────────────────────────────────────────────┐             │
-│  │                CENTRAL SNAT TABLE                     │             │
-│  ├──────────────────────────────────────────────────────┤             │
-│  │                                                        │             │
-│  │  Priority │ Source      │ Destination │ NAT Pool      │             │
-│  │  ─────────┼─────────────┼────────────┼──────────────│             │
-│  │     1     │ 10.1.0.0/24 │ 0.0.0.0/0  │ Pool-Internet │             │
-│  │     2     │ 10.2.0.0/24 │ 8.8.8.8/32 │ Pool-DNS      │             │
-│  │     3     │ 192.168.0.0/16│ Any      │ Outgoing-IP   │             │
-│  │                                                        │             │
-│  └──────────────────────────────────────────────────────┘             │
-│                                                                          │
+│                                                                        │
+│  ┌──────────────────────────────────────────────────────┐              │
+│  │                  DNAT FLOW (VIP)                     │              │
+│  ├──────────────────────────────────────────────────────┤              │
+│  │                                                      │              │
+│  │External: 203.0.113.10:443 ──► Internal: 10.1.1.10:443│              │
+│  │                                                      │              │
+│  │  config firewall vip                                 │              │
+│  │      edit "WebServer-VIP"                            │              │
+│  │      set extip 203.0.113.10                          │              │
+│  │      set mappedip 10.1.1.10                          │              │
+│  │      set extintf "wan1"                              │              │
+│  │      set portforward enable                          │              │
+│  │      set extport 443                                 │              │
+│  │      set mappedport 443                              │              │
+│  │  end                                                 │              │
+│  └──────────────────────────────────────────────────────┘              │
+│                                                                        │
+│  ┌──────────────────────────────────────────────────────┐              │
+│  │                CENTRAL SNAT TABLE                    │              │
+│  ├──────────────────────────────────────────────────────┤              │
+│  │                                                      │              │
+│  │  Priority │ Source      │ Destination│ NAT Pool      │              │
+│  │  ─────────┼─────────────┼────────────┼───────────────│              │
+│  │     1     │ 10.1.0.0/24 │ 0.0.0.0/0  │ Pool-Internet │              │
+│  │     2     │ 10.2.0.0/24 │ 8.8.8.8/32 │ Pool-DNS      │              │
+│  │     3     │ 192.168.0.0/16│ Any      │ Outgoing-IP   │              │
+│  │                                                      │              │
+│  └──────────────────────────────────────────────────────┘              │
+│                                                                        │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -279,34 +279,34 @@ diagnose sys session list
 ### HA Cluster Architecture
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                      FORTIGATE HA ARCHITECTURE                          │
+│                      FORTIGATE HA ARCHITECTURE                         │
 ├────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│   Primary Unit                         Secondary Unit                   │
-│  ┌──────────────┐     Heartbeat      ┌──────────────┐                 │
-│  │              │◄───────────────────►│              │                 │
-│  │  FortiGate   │     HA Interface   │  FortiGate   │                 │
-│  │   Active     │     (Port3/Port4)  │   Standby    │                 │
-│  │              │                     │              │                 │
-│  └──────┬───────┘                     └──────┬───────┘                 │
-│         │                                     │                         │
-│         │ Session Sync                        │                         │
-│         └─────────────────────────────────────┘                         │
-│                                                                          │
+│                                                                        │
+│   Primary Unit                         Secondary Unit                  │
+│  ┌──────────────┐     Heartbeat      ┌──────────────┐                  │
+│  │              │◄──────────────────►│              │                  │
+│  │  FortiGate   │     HA Interface   │  FortiGate   │                  │
+│  │   Active     │     (Port3/Port4)  │   Standby    │                  │
+│  │              │                    │              │                  │
+│  └──────┬───────┘                    └──────┬───────┘                  │
+│         │                                   │                          │
+│         │ Session Sync                      │                          │
+│         └───────────────────────────────────┘                          │
+│                                                                        │
 │  HA Synchronization Items:                                             │
 │  ├─ Configuration Files                                                │
 │  ├─ Session Table                                                      │
-│  ├─ IPSec SA                                                          │
-│  ├─ Routing Table (if enabled)                                        │
-│  ├─ DHCP Leases                                                       │
-│  └─ User Authentication States                                        │
-│                                                                          │
+│  ├─ IPSec SA                                                           │
+│  ├─ Routing Table (if enabled)                                         │
+│  ├─ DHCP Leases                                                        │
+│  └─ User Authentication States                                         │
+│                                                                        │
 │  HA Split-Brain Prevention:                                            │
-│  ├─ Priority (0-255)                                                  │
-│  ├─ Override Enable/Disable                                           │
-│  ├─ Monitor Interfaces                                                │
-│  └─ Uptime Difference                                                 │
-│                                                                          │
+│  ├─ Priority (0-255)                                                   │
+│  ├─ Override Enable/Disable                                            │
+│  ├─ Monitor Interfaces                                                 │
+│  └─ Uptime Difference                                                  │
+│                                                                        │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -399,19 +399,19 @@ diagnose npu np6 xfrm-stats             # Transform stats
 
 ### FortiGate Service Ports
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                     FORTIGATE PORT MATRIX                             │
-├─────────────────┬──────────┬────────────────────────────────────────┤
-│ Service         │ Port     │ Description                            │
-├─────────────────┼──────────┼────────────────────────────────────────┤
-│ HTTPS Admin     │ 443/tcp  │ Web GUI Management                    │
-│ SSH             │ 22/tcp   │ CLI Management                        │
-│ TELNET          │ 23/tcp   │ CLI (disabled by default)             │
-│ FortiManager    │ 541/tcp  │ Central Management                    │
+┌───────────────────────────────────────────────────────────────────┐
+│                     FORTIGATE PORT MATRIX                         │
+├─────────────────┬──────────┬──────────────────────────────────────┤
+│ Service         │ Port     │ Description                          │
+├─────────────────┼──────────┼──────────────────────────────────────┤
+│ HTTPS Admin     │ 443/tcp  │ Web GUI Management                   │
+│ SSH             │ 22/tcp   │ CLI Management                       │
+│ TELNET          │ 23/tcp   │ CLI (disabled by default)            │
+│ FortiManager    │ 541/tcp  │ Central Management                   │
 │ FGFM            │ 703/tcp  │ FortiGate-FortiManager Protocol      │
 │ FortiAnalyzer   │ 514/udp  │ Log forwarding (OFTP/Syslog)         │
-│ OFTP-SSL        │ 514/tcp  │ Encrypted log forwarding              │
-│ FortiGuard      │ 443/tcp  │ Updates and Web Filter                │
+│ OFTP-SSL        │ 514/tcp  │ Encrypted log forwarding             │
+│ FortiGuard      │ 443/tcp  │ Updates and Web Filter               │
 │                 │ 8888/tcp │ FortiGuard backup                    │
 │                 │ 53/udp   │ FortiGuard DNS                       │
 │ FSSO            │ 8000/tcp │ Fortinet Single Sign-On              │
@@ -427,18 +427,18 @@ diagnose npu np6 xfrm-stats             # Transform stats
 │ ESP             │ Protocol │ IPSec payload                        │
 │                 │ 50       │                                      │
 │ SSL VPN         │ 443/tcp  │ SSL VPN portal                       │
-│                 │ 10443/tcp│ SSL VPN alternate                   │
+│                 │ 10443/tcp│ SSL VPN alternate                    │
 │ RADIUS          │ 1812/udp │ Authentication                       │
 │                 │ 1813/udp │ Accounting                           │
 │ LDAP            │ 389/tcp  │ Directory services                   │
-│ LDAPS           │ 636/tcp  │ Secure LDAP                         │
+│ LDAPS           │ 636/tcp  │ Secure LDAP                          │
 │ NTP             │ 123/udp  │ Time synchronization                 │
 │ DNS             │ 53/udp   │ DNS queries                          │
 │ SNMP            │ 161/udp  │ SNMP polling                         │
-│                 │ 162/udp  │ SNMP traps                          │
+│                 │ 162/udp  │ SNMP traps                           │
 │ NetFlow         │ 2055/udp │ Flow export                          │
 │ sFlow           │ 6343/udp │ sFlow export                         │
-└─────────────────┴──────────┴────────────────────────────────────────┘
+└─────────────────┴──────────┴──────────────────────────────────────┘
 ```
 
 ### Protocol Inspection Configuration
@@ -556,34 +556,34 @@ diagnose netlink neighbor list         # Netlink neighbors
 ### Troubleshooting Decision Tree
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                  FORTIGATE TROUBLESHOOTING FLOWCHART                    │
+│                  FORTIGATE TROUBLESHOOTING FLOWCHART                   │
 ├────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
+│                                                                        │
 │  SYMPTOM: Traffic Not Passing                                          │
-│                                                                          │
+│                                                                        │
 │  1. Check Interfaces                                                   │
-│     └─► diagnose netlink interface list                               │
-│                                                                          │
+│     └─► diagnose netlink interface list                                │
+│                                                                        │
 │  2. Check Routing                                                      │
-│     ├─► get router info routing-table all                            │
-│     └─► diagnose ip route list                                       │
-│                                                                          │
-│  3. Check Security Policy                                             │
-│     ├─► diagnose firewall iprope lookup <src> <dst> <port>          │
-│     └─► diagnose debug flow trace                                    │
-│                                                                          │
-│  4. Check NAT                                                         │
-│     ├─► diagnose sys session filter nat                              │
-│     └─► diagnose firewall ippool list                               │
-│                                                                          │
-│  5. Check Sessions                                                    │
-│     ├─► diagnose sys session filter <criteria>                       │
-│     └─► diagnose sys session list                                    │
-│                                                                          │
-│  6. Check UTM                                                         │
-│     ├─► diagnose debug application ips -1                            │
-│     └─► diagnose wad debug enable all                               │
-│                                                                          │
+│     ├─► get router info routing-table all                              │
+│     └─► diagnose ip route list                                         │
+│                                                                        │
+│  3. Check Security Policy                                              │
+│     ├─► diagnose firewall iprope lookup <src> <dst> <port>             │
+│     └─► diagnose debug flow trace                                      │
+│                                                                        │
+│  4. Check NAT                                                          │
+│     ├─► diagnose sys session filter nat                                │
+│     └─► diagnose firewall ippool list                                  │
+│                                                                        │
+│  5. Check Sessions                                                     │
+│     ├─► diagnose sys session filter <criteria>                         │
+│     └─► diagnose sys session list                                      │
+│                                                                        │
+│  6. Check UTM                                                          │
+│     ├─► diagnose debug application ips -1                              │
+│     └─► diagnose wad debug enable all                                  │
+│                                                                        │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
